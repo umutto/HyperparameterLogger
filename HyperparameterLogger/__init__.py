@@ -204,8 +204,8 @@ class ModelTracker(object):
         
         
     @classmethod
-    def load_from_keras(cls, model, path='', name='keras_model', seed=None, train_time=None, evaluation=None):
-        name = model.name or name
+    def load_from_keras(cls, model, path='', name=None, seed=None, train_time=None, evaluation=None):
+        name = name or model.name or 'keras_model'
         model_type = model.__module__ + '.' + model.__class__.__name__
         
         stats = json.loads(model.to_json())
