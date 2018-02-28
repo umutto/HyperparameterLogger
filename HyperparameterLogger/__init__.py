@@ -147,7 +147,7 @@ class ModelTracker(object):
         return cls(path, name, model, save_func, model_type, config, optimizer, history, **kwargs)
         
     @classmethod
-    def load_from_gensim_d2v(cls, model, path='', name='gensim_model', evaluation=None):
+    def load_from_gensim_d2v(cls, model, path='', name='gensim_model', seed=None, evaluation=None):
         model_type = model.__module__ + '.' + model.__class__.__name__
         
 
@@ -155,7 +155,7 @@ class ModelTracker(object):
             'window': model.window,
             'vector_size': model.vector_size,
             'min_count': model.min_count,
-            'max_vocab_size': model.max_vocab_size,
+            'max_vocab_size': model.vocabulary.max_vocab_size,
             'sample': model.sample,
             'dm': model.dm,
             'dm_concat': model.dm_concat,
@@ -167,7 +167,7 @@ class ModelTracker(object):
             'sg': model.sg,
             'cbow_mean': model.cbow_mean,
             'memory': model.estimate_memory(),
-            'null_word': model.null_word
+            'null_word': model.vocabulary.null_word
         }
 
         optimizer = {
@@ -192,7 +192,7 @@ class ModelTracker(object):
         
         kwargs = {
             'class_name': model.__class__.__name__,
-            'seed': model.seed,
+            'seed': seed,
             'train_time': model.total_train_time,
             'evaluation': evaluation,
             'comment': model.comment
@@ -231,8 +231,7 @@ class ModelTracker(object):
             history_params = model.history.params
             history_hist = model.history.history
 
-        history = {'name': name+'_history',
-                   'params': history_params,
+        history = {'params': history_params,
                    'metric_history': history_hist}
         
         save_func = lambda m, p: m.save(p) 
