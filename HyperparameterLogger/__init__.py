@@ -6,8 +6,16 @@ import collections
 import pickle
 from datetime import datetime
 import json
-import yaml
-import xmltodict
+try:
+    import yaml
+except ImportError:
+    print('Could not detect PyYaml library. Install PyYaml ' +
+          'if you want to be able to export configurations as .yaml.')
+try:
+    import xmltodict
+except ImportError:
+    print('Could not detect xmltodict library. Install xmltodict ' +
+          'if you want to be able to export configurations as .xml.')
 
 
 class ModelTracker(object):
@@ -76,6 +84,8 @@ class ModelTracker(object):
         file_path = f"{self.file_path}_{name}.pickle"
         with open(file_path, 'wb') as f:
             pickle.dump(helper, f)
+
+        return self
 
     def plot_keras_graph(self):
         file_path = self.file_path + '.png'
