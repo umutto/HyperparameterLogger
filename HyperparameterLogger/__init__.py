@@ -21,16 +21,16 @@ except ImportError:
 class ModelTracker(object):
     def __init__(self, directory, name, model, save_func,
                  model_type, config, optimizer, history, **kwargs):
-        self.directory = directory
-        self.name = name
-        self.model = model
-        self.model_type = model_type
-        self.config = config
-        self.optimizer = optimizer
-        self.history = history
-        self.save_func = save_func
-        self.kwargs = kwargs
-        self.kwargs['date'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self._directory = directory
+        self._name = name
+        self._model = model
+        self._model_type = model_type
+        self._config = config
+        self._optimizer = optimizer
+        self._history = history
+        self._save_func = save_func
+        self._kwargs = kwargs
+        self._kwargs['date'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self._set_path()
 
     def __str__(self):
@@ -41,58 +41,59 @@ class ModelTracker(object):
 
     def get_dict(self):
         stats = {
-            'name': self.name,
-            'type': self.model_type,
-            'config': self.config,
-            'optimizer': self.optimizer,
-            'history': self.history
+            'name': self._name,
+            'type': self._model_type,
+            'config': self._config,
+            'optimizer': self._optimizer,
+            'history': self._history
         }
-        stats.update(self.kwargs)
+        stats.update(self._kwargs)
         return stats
 
     def _set_path(self, custom_path=None):
-        self.file_path = custom_path
+        self._file_path = custom_path
 
-        if self.file_path:
-            return self.file_path
+        if self._file_path:
+            return self._file_path
 
         i = 0
-        file_name = self.name
-        while list(pathlib.Path(self.directory).glob(f'{file_name}.*')):
+        file_name = self._name
+        while list(pathlib.Path(self._directory).glob(f'{file_name}.*')):
             i += 1
-            file_name = self.name + f'_{i}'
+            file_name = self._name + f'_{i}'
 
         if i != 0:
             log.warning(
                 f'Filename already exists, adding postfix {i} to the given filename')
 
-        self.file_path = self.directory + file_name
-        self.kwargs['physical_path'] = self.file_path
-        return self.file_path
+        self._file_path = self._directory + file_name
+        self._kwargs['physical_path'] = self._file_path
+        return self._file_path
 
     def save_model(self):
-        file_path = self.file_path + '.' + self.model_type.split('.')[0]
-        if self.save_func:
-            self.save_func(self.model, file_path)
+        file_path = self._file_path + '.' + self._model_type.split('.')[0]
+        if self._save_func:
+            self._save_func(self._model, file_path)
         else:
             with open(file_path, 'wb') as f:
-                pickle.dump(self.model, f)
+                pickle.dump(self._model, f)
 
         return self
 
     def save_helper(self, helper, name='helper_lib'):
-        file_path = f"{self.file_path}_{name}.pickle"
+        file_path = f"{self._file_path}_{name}.pickle"
         with open(file_path, 'wb') as f:
             pickle.dump(helper, f)
 
         return self
 
-    def plot_keras_graph(self):
-        file_path = self.file_path + '.png'
+    def plot_keras_graph(self, orientation='LR'):
+        file_path = self._file_path + '.png'
 
         from keras.utils import plot_model
         try:
-            plot_model(self.model, file_path, show_shapes=True, rankdir='LR')
+            plot_model(self._model, file_path,
+                       show_shapes=True, rankdir=orientation)
         except ImportError as e:
             log.warning('Error when trying to plot model graph, skipping. ' +
                         'Please install graphviz to export a graph. ' +
@@ -102,7 +103,7 @@ class ModelTracker(object):
 
     def log(self, output_format='json'):
         output_format = output_format.lower()
-        file_path = self.file_path + '.' + output_format
+        file_path = self._file_path + '.' + output_format
         with open(file_path, 'w', encoding='utf-8') as f:
             d = self.get_dict()
             if output_format == 'yaml':
@@ -216,7 +217,7 @@ class ModelTracker(object):
             'comment': model.comment
         }
 
-        save_func = lambda m, p: m.save(p)
+        def save_func(m, p): return m.save(p)
 
         return cls(path, name, model, save_func, model_type, config,
                    optimizer, history, **kwargs)
@@ -253,7 +254,7 @@ class ModelTracker(object):
         history = {'params': history_params,
                    'metric_history': history_hist}
 
-        save_func = lambda m, p: m.save(p)
+        def save_func(m, p): return m.save(p)
 
         return cls(path, name, model, save_func, model_type, config,
                    optimizer, history, **kwargs)

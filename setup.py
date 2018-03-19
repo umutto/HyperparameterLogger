@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='HyperparameterLogger',
-    version='0.4.dev0',
+    version='0.4.dev1',
     description='Simple model tracker, that wraps Keras, Sklearn and Gensim to record hyperparameters.',
     author='Umut Karakulak',
     author_email='umut@dunksoft.com',
